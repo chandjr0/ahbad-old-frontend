@@ -1,0 +1,28 @@
+.custom-position {
+    right: calc((100% - 1600px) / 2);
+  }
+
+  .clip-hexagon {
+    clip-path: polygon(50% 0%, 100% 38%, 100% 100%, 0 100%, 0% 38%);
+  }
+
+.review-section .swiper-slide {
+  transition: all 0.3s ease;
+  opacity: 0.5;
+}
+
+.review-section .swiper-slide-active {
+  opacity: 1;
+  filter: none;
+  border: 1px solid #000;
+}
+
+
+
+
+  @media screen and (max-width: 1600px) {
+    .custom-position {
+      right: 0;
+    }
+  }
+  

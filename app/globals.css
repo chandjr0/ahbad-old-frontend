@@ -1,0 +1,295 @@
+/* @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap'); */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* --background: #ffffff; */
+
+  --bg-secondary: #18443F;
+}
+
+body{
+  background-color: #E6E6E6;
+}
+
+
+.custom-scrollbar {
+  scrollbar-width: thin; /* For Firefox */
+  scrollbar-color: gray transparent; /* For Firefox */
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 10px; /* For Chrome, Safari, and Edge */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: gray; /* Thumb color */
+  border-radius: 10px; /* Optional rounded corners */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent; /* Track color */
+}
+
+body {
+  /* font-family: "Manrope", sans-serif; */
+  box-sizing: border-box;
+  background-color: white;
+}
+
+.base-container {
+  @apply container max-w-[1536px]  mx-auto px-2 md:px-4 ;
+}
+
+/* .base-container {
+  @apply px-1 md:px-0   ;
+} */
+
+.section-gap {
+  @apply pt-6 xl:pt-10 2xl:pt-[60px];
+}
+.global-top {
+  @apply !pt-[3.8rem] lg:!pt-[6.6rem];
+}
+
+.text-title {
+  @apply uppercase font-bold text-lg 2xl:text-2xl  text-[#070707];
+}
+
+/* .button {
+  @apply bg-[#070707] hover:bg-[#FC5F49] text-white py-4 px-12 rounded uppercase text-[12px];
+} */
+.button {
+  background-color: var(--bg-secondary);
+  @apply hover:bg-[#FC5F49] text-white py-4 px-12 rounded uppercase font-bold text-[12px];
+}
+
+.image-zoom,
+.image-zoom2 {
+  overflow: hidden;
+  display: block;
+}
+
+.image-zoom img {
+  transition: transform 3s ease; /* Smooth animation over 0.3 seconds */
+}
+
+.image-zoom:hover img {
+  transform: scale(1.2); /* Zoom in slig6tly on hover */
+}
+
+.image-zoom2 img {
+  transition: transform 0.5s ease; /* Smooth animation over 0.3 seconds */
+}
+
+.image-zoom2:hover img {
+  transform: scale(1.2); /* Zoom in slightly on hover */
+}
+
+.swiper-pagination-bullet {
+  width: 13px !important;
+  height: 13px !important;
+  border: 1px solid black;
+  background-color: transparent;
+  border-radius: 50%;
+  opacity: 1;
+  position: relative;
+  transition: background-color 0.3s, border-color 0.3s; /* Optional: Add transition for smoother effect */
+}
+
+.swiper-pagination-bullet::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  background-color: transparent;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.swiper-pagination-bullet-active {
+  border-color: rgba(56, 56, 56, 0.925);
+  padding: 0 !important; /* Remove padding */
+  background: white !important;
+  width: 16px !important; /* Slightly increase the size for active */
+  height: 16px !important; /* Slightly increase the size for active */
+}
+
+.swiper-pagination-bullet-active::after {
+  background-color: red !important;
+  width: 8px; /* Make the inner bullet larger if desired */
+  height: 8px; /* Make the inner bullet larger if desired */
+  position: absolute; /* Keep it centered */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Centering */
+}
+
+
+.custom-box-shadow {
+  box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.03);
+}
+
+.custom-swiper .swiper-button-next,
+.custom-swiper .swiper-button-prev {
+  background-color: white;
+  color: black; /* Set the arrow color */
+  border-radius: 50%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 40px;
+  height: 40px;
+}
+
+.custom-swiper .swiper-button-next:hover,
+.custom-swiper .swiper-button-prev:hover {
+  @apply bg-primary text-white;
+}
+
+.custom-swiper .swiper-button-next::after,
+.custom-swiper .swiper-button-prev::after {
+  font-size: 16px; /* Adjust arrow size */
+}
+
+/* In your global or component-specific CSS */
+.col-span-12,
+.lg\:col-span-6 {
+  overflow: visible; /* Ensure overflow is visible to allow zoom rendering */
+}
+
+
+
+.toolbar__bg svg {
+  position: absolute;
+  display: block;
+  width: 200px !important; /* Increase width to make the curve wider */
+  height: 120px; /* Increase height to make the curve deeper */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+svg:not(:root) {
+  overflow: hidden;
+}
+
+.wrapper {
+  max-width: 400px;
+  margin: 0px auto;
+}
+
+.page {
+  width: 100vw;
+  height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.page img {
+  max-width: 60%;
+  height: auto;
+  display: block;
+}
+
+.bottom-appbar {
+  height: 70px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+}
+
+.bottom-appbar .tabs {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+}
+
+.bottom-appbar .tabs .tab {
+  background-color: #fff;
+  width: 33.4%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  border-top: 1px solid #eee;
+  box-shadow: 1px 1px 3px #ccc, -1px -1px 3px #ccc;
+  font-size: 24px;
+}
+
+.bottom-appbar .tabs .tab span {
+  font-size: 12px;
+}
+
+.bottom-appbar .tabs .tab i {
+  font-size: 24px;
+}
+
+.bottom-appbar .tabs .tab.is-active {
+  color: #fd9d97;
+}
+
+.bottom-appbar .tabs .tab--left {
+  width: 100%;
+  border-top-right-radius: 30px;
+  border-top: 1px solid rgba(167, 161, 161, 0.69);
+  box-shadow: 0px 6px 7px 0px rgba(23, 23, 23, 0.28);
+}
+
+.bottom-appbar .tabs .tab--right {
+  width: 100%;
+  border-top-left-radius: 30px;
+  border-top: 1px solid rgba(167, 161, 161, 0.69);
+  box-shadow: 15px 4px 15px 0px rgba(23, 23, 23, 0.28);
+}
+
+.bottom-appbar .tabs .tab--fab {
+  width: 180px;
+  height: 100%;
+  background: transparent;
+  border: none;
+  display: flex;
+}
+
+.bottom-appbar .tabs .tab--fab .top {
+  width: 100%;
+  height: 50%;
+  border-bottom-left-radius: 100px;
+  border-bottom-right-radius: 100px;
+  background-color: transparent;
+  box-shadow: 0px 30px 0px 25px #fff;
+  border-bottom: 1px solid rgba(167, 161, 161, 0.69);
+  display: flex;
+}
+
+.bottom-appbar .tabs .fab {
+  border-radius: 50%;
+  background-color: #fe989c;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 70px;
+  height: 70px;
+  font-weight: bold;
+  font-size: 22px;
+  color: #fff;
+  position: relative;
+  transform: translate(2px, -60%);
+}
+
+
+
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

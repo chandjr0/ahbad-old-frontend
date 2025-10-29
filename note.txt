@@ -1,0 +1,2 @@
+udpate next.config.js file 
+udpate config.js file 
