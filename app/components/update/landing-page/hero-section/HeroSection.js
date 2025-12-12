@@ -28,8 +28,8 @@ const HeroSection = ({ slider }) => {
 
   const handleMouseEnterCategory = (category) => {
     setHoveredCategory(category?.name);
-    if (category?.children) {
-      setChildrenData(category?.children);
+    if (category?.children && Array.isArray(category.children) && category.children.length > 0) {
+      setChildrenData(category.children);
     } else {
       setChildrenData([]);
     }
@@ -53,7 +53,7 @@ const HeroSection = ({ slider }) => {
       >
         {/* Sidebar Section */}
         <div className="hidden lg:block lg:col-span-3 2xl:col-span-2 h-[460px] overflow-y-scroll custom-scrollbar bg-white">
-          {allCategories?.map((category, index) => (
+          {Array.isArray(allCategories) && allCategories.length > 0 ? allCategories.map((category, index) => (
             <Link
               href={`/category/${category?.slug}`}
               key={index}
@@ -62,8 +62,8 @@ const HeroSection = ({ slider }) => {
             >
               {/* <AiOutlineCrown className="text-black" /> */}
               <Image
-                src={`${imageBasePath}/${category?.imageForCategoryProduct}`}
-                alt="category"
+                src={category?.imageForCategoryProduct ? `${imageBasePath}/${category.imageForCategoryProduct}` : "/image/placeholder_600x.webp"}
+                alt={category?.name || "category"}
                 width={0}
                 height={0}
                 sizes={100}
@@ -73,7 +73,9 @@ const HeroSection = ({ slider }) => {
                 {category?.name}
               </h3>
             </Link>
-          ))}
+          )) : (
+            <div className="p-3 text-sm text-gray-500">No categories available</div>
+          )}
         </div>
 
         {/* Dynamic Content Section */}
@@ -90,10 +92,10 @@ const HeroSection = ({ slider }) => {
                     <div className="flex flex-col items-center text-center">
                       {/* Image Section */}
                       <Image
-                         src={`${imageBasePath}/${
-                          child?.imageForCategoryProduct || child?.image || child?.imageForHomePage
-                        }`}
-                        alt={child?.name}
+                        src={(child?.imageForCategoryProduct || child?.image || child?.imageForHomePage)
+                          ? `${imageBasePath}/${child.imageForCategoryProduct || child.image || child.imageForHomePage}`
+                          : "/image/placeholder_600x.webp"}
+                        alt={child?.name || "category"}
                         width={80}
                         height={80}
                         className="w-20 h-20 object-contain mb-3 transition-transform group-hover:scale-110"
@@ -118,7 +120,7 @@ const HeroSection = ({ slider }) => {
               spaceBetween={50}
               slidesPerView={1}
               autoplay={{ delay: 3000 }}
-              loop={true}
+              loop={slider?.sliderImgs?.length > 1}
               pagination={true}
               modules={[Pagination, Autoplay]}
               className="mySwiper"
@@ -130,7 +132,7 @@ const HeroSection = ({ slider }) => {
                       <div className="">
                         <div className="w-full h-full">
                           <Image
-                            src={`${imageBasePath}/${item?.image}`}
+                            src={item?.image ? `${imageBasePath}/${item.image}` : "/image/placeholder_600x.webp"}
                             alt="banner"
                             height={0}
                             width={0}

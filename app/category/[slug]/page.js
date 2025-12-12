@@ -39,41 +39,6 @@ const CategoryWiseProduct = async (params) => {
 
   return (
     <>
-      <head>
-        {/* Open Graph Meta Tags */}
-        <meta property="og:title" content={params.params.slug} />
-        <meta
-          property="og:description"
-          content={`${siteData?.data?.data?.shopName} - ${siteData?.data?.data?.subTitle}`}
-        />
-        <meta
-          property="og:image"
-          content={`${imageBasePath}/${
-            category?.image || siteData?.data?.data?.sliderImgs[0]?.image
-          }`}
-        />
-        <meta
-          property="og:url"
-          content={`${baseUrl}/category/${params.params.slug}`}
-        />
-        <meta property="og:type" content="website" />
-
-        {/* Twitter Card Meta Tags */}
-        <meta name="twitter:title" content={params.params.slug} />
-        <meta
-          name="twitter:description"
-          content={`${siteData?.data?.data?.shopName} - ${siteData?.data?.data?.subTitle}`}
-        />
-        <meta
-          name="twitter:image"
-          content={`${imageBasePath}/${
-            category?.image || siteData?.data?.data?.sliderImgs[0]?.image
-          }`}
-        />
-        <meta name="twitter:site" content="@mywebsite" />
-        <meta name="twitter:card" content="summary_large_image" />
-      </head>
-
       <PageView />
 
       <div>

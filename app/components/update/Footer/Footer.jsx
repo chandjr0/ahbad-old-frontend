@@ -333,10 +333,9 @@ export default function Footer() {
 
                 <li>
                   <Link href="/terms-and-conditions">
-                    {" "}
-                    <pnk className="text-sm font-semibold text-white hover:text-orange-600 duration-300">
+                    <p className="text-sm font-semibold text-white hover:text-orange-600 duration-300">
                       Terms & Conditions
-                    </pnk>
+                    </p>
                   </Link>
                 </li>
                 {/* <li>

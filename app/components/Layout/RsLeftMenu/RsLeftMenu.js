@@ -47,7 +47,7 @@ function ResLeftMenu() {
         </div>
 
         <ul className="p-4" ref={rsleftMenuRef}>
-          {allCategories?.map((item, index) => (
+          {Array.isArray(allCategories) && allCategories.length > 0 ? allCategories.map((item, index) => (
             <div key={index}>
               {item?.children?.length > 0 ? (
                 <li className="list-none py-2 border-b border-gray-300">
@@ -61,7 +61,9 @@ function ResLeftMenu() {
                 </Link>
               )}
             </div>
-          ))}
+          )) : (
+            <li className="list-none py-2 text-gray-500 text-sm">No categories available</li>
+          )}
           {/* <li
             className="list-none text-black py-2 border-b border-gray-300 uppercase text-sm font-semibold"
             onClick={() => handleClick()}

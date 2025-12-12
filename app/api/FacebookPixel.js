@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 const FacebookPixel = ({ eventType, eventData, pixelId }) => {
+  const trackedEventIdRef = useRef(null);
 
   useEffect(() => {
     if (typeof window !== "undefined" && pixelId) {
@@ -32,8 +33,11 @@ const FacebookPixel = ({ eventType, eventData, pixelId }) => {
 
   useEffect(() => {
     if (typeof window !== "undefined" && pixelId && eventData?.eventID) {
-      // Trigger the tracking event every time the page or event changes
-      fbq("track", eventType, eventData);
+      // Only track if this eventID hasn't been tracked yet
+      if (trackedEventIdRef.current !== eventData.eventID) {
+        fbq("track", eventType, eventData);
+        trackedEventIdRef.current = eventData.eventID;
+      }
     }
   }, [eventType, eventData?.eventID, pixelId]);
 

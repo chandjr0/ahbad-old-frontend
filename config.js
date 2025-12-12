@@ -1,4 +1,4 @@
-export const hostname = "https://ahbab-api.tenant-nur.store";
-export const imageBasePath = "https://ahbab-api.tenant-nur.store";
-export const baseUrl = "https://ahbab.art"
+export const hostname = "http://localhost:7074";
+export const imageBasePath = "http://localhost:7074";
+export const baseUrl = "http://localhost:7074"
 export const mainUrl = "http://localhost:8074/api/v1";

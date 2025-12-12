@@ -1,35 +1,42 @@
-import request from "../../lib/request";
+"use client";
 
-async function getHomeSettings() {
-  try {
-    let res = await request(`setting/admin/site-view`);
-    if (res) {
-      return res?.data?.data;
+import { useEffect } from "react";
+import { useStatus } from "@/context/contextStatus";
+
+export default function MetaPixel() {
+  const { settingsData } = useStatus();
+
+  useEffect(() => {
+    const pixelId = settingsData?.allScript?.fbScript?.header;
+
+    // Only initialize if we have a valid pixel ID and haven't already loaded
+    if (!pixelId || typeof window === "undefined" || window.fbq) {
+      return;
     }
-  } catch (error) {
-    console.log("err in get settings", error);
-  }
-}
 
-export default async function MetaPixel() {
-  const homeSettings = await getHomeSettings();
+    // FB Pixel base code
+    (function(f,b,e,v,n,t,s) {
+      if(f.fbq) return;
+      n = f.fbq = function() {
+        n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+      };
+      if(!f._fbq) f._fbq = n;
+      n.push = n;
+      n.loaded = !0;
+      n.version = '2.0';
+      n.queue = [];
+      t = b.createElement(e);
+      t.async = !0;
+      t.src = v;
+      s = b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t, s);
+    })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
 
-  return (
-    <>
-      <script>
-        {`!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init',${homeSettings?.allScript?.fbScript?.header});
-fbq('track', 'PageView');`}
-      </script>
+    // Initialize with pixel ID
+    window.fbq('init', pixelId);
+    window.fbq('track', 'PageView');
+  }, [settingsData]);
 
-      {/* <script>{`${homeSettings?.allScript?.fbScript?.body}`}</script> */}
-    </>
-  );
+  // Client-only component renders nothing visible
+  return null;
 }

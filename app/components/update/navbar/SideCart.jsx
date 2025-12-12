@@ -9,8 +9,6 @@ const SideCart = () => {
   const { cartItems, setCartItems } = useStatus();
   const [renderMe, setRenderMe] = useState(false);
 
-  console.log("cartItems", cartItems);
-
 
   const increment = async (index, stock, qty, item) => {
     if (item?.isCombo) {

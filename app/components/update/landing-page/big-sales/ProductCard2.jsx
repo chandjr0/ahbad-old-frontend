@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
+import { getProductImage } from "@/app/utils/getProductImage";
 
 const ProductCard2 = ({ item, combo }) => {
   const [isVariant, setIsVariant] = useState(item?.isVariant);
@@ -308,13 +309,13 @@ const ProductCard2 = ({ item, combo }) => {
       <Link href={`/product/${item?.slug}`} key={item?.id}>
         <div className="relative">
           <div className="w-full h-auto aspect-[1/1] image-zoom2 p-[10px] ">
-            <Image
-              src={`${imageBasePath}/${item?.galleryImage?.[0]}`}
-              alt={item?.title}
-              width={0}
-              height={0}
-              sizes={100}
-              className="w-full full "
+            <img
+              src={getProductImage(item)}
+              alt={item?.name || "Product"}
+              className="w-full h-full object-contain"
+              onError={(e) => {
+                e.target.src = "/image/placeholder_600x.webp";
+              }}
             />
           </div>
           {/* <div className="absolute top-2 right-0">

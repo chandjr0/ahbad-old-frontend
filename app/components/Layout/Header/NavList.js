@@ -21,7 +21,7 @@ const NavList = async () => {
 
   return (
     <ul className="flex items-center">
-      {homeSettings?.data?.data?.categoryData?.map((item, index) => (
+      {Array.isArray(homeSettings?.data?.data?.categoryData) && homeSettings.data.data.categoryData.length > 0 ? homeSettings.data.data.categoryData.map((item, index) => (
         <li key={index} className="relative">
           <Link
             className="group relative flex space-x-2 items-center px-4 py-2 cursor-pointer"
@@ -60,7 +60,7 @@ const NavList = async () => {
             )}
           </Link>
         </li>
-      ))}
+      )) : null}
     </ul>
   );
 };

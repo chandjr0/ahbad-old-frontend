@@ -14,37 +14,79 @@ import PlaceholderImage from "@/public/image/placeholder_600x.webp";
 
 const ProductSectionSlug = ({ params }) => {
   const [offset, setOffset] = useState(1);
-  const [productInfo, setProductInfo] = useState({});
+  const [productInfo, setProductInfo] = useState(null);
   const [totalProducts, setTotalProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const loadMoreUsers = async () => {
-    setLoading(true);
-    const productInfoData = await getCategoryWisePro(
-      params.params.slug,
-      offset,
-      100
-    );
-    setProductInfo(productInfoData);
-    setTotalProducts([...totalProducts, ...productInfoData?.data?.data]);
-    setOffset(offset + 1);
-    setLoading(false);
+  const loadMoreUsers = async (page = 1, append = false) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const productInfoData = await getCategoryWisePro(
+        params.params.slug,
+        page,
+        100
+      );
+      
+      if (productInfoData?.data) {
+        setProductInfo(productInfoData);
+        if (append) {
+          setTotalProducts([...totalProducts, ...(productInfoData?.data?.data || [])]);
+        } else {
+          setTotalProducts(productInfoData?.data?.data || []);
+        }
+      } else {
+        // Handle empty response
+        if (!append) {
+          setTotalProducts([]);
+          setProductInfo({ data: { data: [], metaData: { totalData: 0 } } });
+        }
+      }
+    } catch (err) {
+      console.error("Error loading category products:", err);
+      setError("Failed to load products");
+      if (!append) {
+        setTotalProducts([]);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    loadMoreUsers();
-  }, []);
+    loadMoreUsers(1, false);
+  }, [params.params.slug]);
+
+  const handleLoadMore = () => {
+    const nextPage = offset + 1;
+    setOffset(nextPage);
+    loadMoreUsers(nextPage, true);
+  };
 
   return (
     <div>
-      {/* Loader */}
-      {loading && (
-        <div className="flex justify-center items-center min-h-screen">
-          <p className="text-xl font-semibold">Loading...</p>
+      {/* Loader - only show on initial load */}
+      {loading && totalProducts.length === 0 && (
+        <div className="flex justify-center items-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-xl font-semibold">Loading...</p>
+          </div>
         </div>
       )}
 
-      {!loading && (
+      {!loading && totalProducts.length === 0 && !error && (
+        <Custom404 />
+      )}
+
+      {error && (
+        <div className="flex justify-center items-center min-h-[400px]">
+          <p className="text-xl font-semibold text-red-600">{error}</p>
+        </div>
+      )}
+
+      {(totalProducts.length > 0 || (!loading && productInfo)) && (
         <>
           {/* Category Swiper */}
           {productInfo?.data?.categoriesInfo?.categoriesWiseSubcategories?.length > 0 && (
@@ -100,7 +142,7 @@ const ProductSectionSlug = ({ params }) => {
           )}
 
           {/* Products */}
-          {totalProducts?.length > 0 ? (
+          {totalProducts?.length > 0 && (
             <>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 lg:gap-7">
                 {totalProducts?.map((item, index) => (
@@ -110,18 +152,17 @@ const ProductSectionSlug = ({ params }) => {
                 ))}
               </div>
               <div className="flex justify-center mt-3 pb-3">
-                {productInfo?.data?.metaData?.totalData !== totalProducts?.length && (
+                {productInfo?.data?.metaData?.totalData > totalProducts?.length && (
                   <button
-                    onClick={loadMoreUsers}
-                    className="bg-black text-white px-3 py-2 text-[13px] rounded-md"
+                    onClick={handleLoadMore}
+                    disabled={loading}
+                    className="bg-black text-white px-3 py-2 text-[13px] rounded-md disabled:opacity-50"
                   >
-                    See More
+                    {loading ? "Loading..." : "See More"}
                   </button>
                 )}
               </div>
             </>
-          ) : (
-            <Custom404 />
           )}
         </>
       )}

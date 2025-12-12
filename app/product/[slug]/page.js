@@ -54,54 +54,6 @@ export default async function ProductDetails(params) {
 
   return (
     <>
-      <head>
-        {/* Default meta tags */}
-        <title>{` ${productInfo?.data?.data?.name}`}</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta
-          name="description"
-          content={productInfo?.data?.data?.description}
-        />
-        <link
-          rel="canonical"
-          href={`${baseUrl}/product/${productInfo?.data?.data?.slug}`}
-        />
-
-        {/* Open Graph Meta Tags */}
-        <meta property="og:title" content={productInfo?.data?.data?.name} />
-        <meta
-          property="og:description"
-          content={productInfo?.data?.data?.description}
-        />
-        <meta
-          property="og:image"
-          content={productImage}
-        />
-        <meta
-          property="og:url"
-          content={`${baseUrl}/product/${productInfo?.data?.data?.slug}`}
-        />
-        <meta property="og:type" content="website" />
-
-        {/* Twitter Card Meta Tags */}
-        <meta name="twitter:title" content={productInfo?.data?.data?.name} />
-        <meta
-          name="twitter:description"
-          content={productInfo?.data?.data?.description}
-        />
-        <meta
-          name="twitter:image"
-          content={productImage}
-        />
-        <meta name="twitter:site" content="@mywebsite" />
-        <meta name="twitter:card" content="summary_large_image" />
-
-        {/* SEO Tags */}
-        {productInfo?.data?.data?.tags?.length > 0 && (
-          <meta name="keywords" content={productInfo?.data?.data?.tags.join(", ")} />
-        )}
-      </head>
-
       {/* <div className="bg-white text-black pb-12">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-2 xls:grid-cols-1 xms:grid-cols-1 xs:grid-cols-1 gap-8  sm:gap-4 xls:gap-0 xms:gap-0 xs:gap-0  pt-8">

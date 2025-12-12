@@ -5,7 +5,8 @@ module.exports = {
   images: {
     domains: [
       "ahbab-api.tenant-nur.store",
+      "localhost",
     ],
-   
+    unoptimized: true,
   },
 };

@@ -47,10 +47,6 @@ const BigscreenUserCompo = () => {
     }
   }, [cookie]);
 
-  const trackOrder = async () => {
-    setTrackingModal(true);
-  };
-
   return (
     <>
       <Menu as="div" className="relative ">

@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
+import { getProductImage } from "@/app/utils/getProductImage";
 
 const ProductCard = ({ item, combo }) => {
   const [isVariant, setIsVariant] = useState(item?.isVariant);
@@ -238,21 +239,21 @@ const ProductCard = ({ item, combo }) => {
       <div key={item?.id} className="relative ">
         <Link href={`/product/${item?.slug}`} className="relative group">
           <div className="w-full h-[300px] md:h-[450px]">
-            <Image
-              src={`${imageBasePath}/${item?.galleryImage?.[0]}`}
-              alt={item?.title}
-              width={0}
-              height={0}
-              sizes={100}
+            <img
+              src={getProductImage(item)}
+              alt={item?.name || "Product"}
               className="w-full h-[300px] md:h-[450px] object-cover"
+              onError={(e) => {
+                e.target.src = "/image/placeholder_600x.webp";
+              }}
             />
           </div>
 
-          {hasMultipleImages && (
+          {hasMultipleImages && item?.galleryImage?.[1] && (
             <div className="absolute top-0 left-0 w-full h-full">
               <Image
-                src={`${imageBasePath}/${item?.galleryImage?.[1]}`}
-                alt={item?.title}
+                src={`${imageBasePath}/${item.galleryImage[1]}`}
+                alt={item?.name || "Product"}
                 width={0}
                 height={0}
                 sizes={100}

@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import encryptData from "../api/encrypt";
 import PlaceHolderImg from "@/public/image/placeholder_600x.webp";
+import { getProductImage, resolveImageUrl } from "@/app/utils/getProductImage";
 
 
 const ProductCard = ({ productDetails, params, combo }) => {
@@ -122,63 +123,38 @@ const ProductCard = ({ productDetails, params, combo }) => {
             : `/product/${productDetails?.slug}`
         }
       >
-        {productDetails?.galleryImage?.length > 0 ? (
+        {productDetails?.galleryImage?.length > 1 ? (
           <>
-            {productDetails?.galleryImage?.length > 1 ? (
-              <>
-                <div className=" cursor-pointer group-hover:hidden block">
-                  <Image
-                    width={500}
-                    height={500}
-                    src={
-                      productDetails?.galleryImage?.length &&
-                      `${imageBasePath}/${productDetails?.galleryImage[0]}`
-                    }
-                    alt="prod-1"
-                    priority
-                    id="product_view"
-                  />
-                </div>
-
-                <div
-                  id="product_view"
-                  className="cursor-pointer hidden group-hover:block"
-                >
-                  <Image
-                    width={500}
-                    height={500}
-                    src={`${imageBasePath}/${productDetails?.galleryImage[1]}`}
-                    alt="prod-2"
-                    priority
-                    id="product_view"
-                  />
-                </div>
-              </>
-            ) : (
-              <div className="cursor-pointer">
-                <Image
-                  width={500}
-                  height={500}
-                  src={
-                    productDetails?.galleryImage?.length &&
-                    `${imageBasePath}/${productDetails?.galleryImage[0]}`
-                  }
-                  alt="prod-1"
-                  priority
-                  id="product_view"
-                />
-              </div>
-            )}
+            <div className="cursor-pointer group-hover:hidden block">
+              <img
+                src={getProductImage(productDetails)}
+                alt={productDetails?.name || "Product"}
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  e.target.src = "/image/placeholder_600x.webp";
+                }}
+              />
+            </div>
+            <div className="cursor-pointer hidden group-hover:block">
+              <img
+                src={resolveImageUrl(productDetails?.galleryImage?.[1])}
+                alt={productDetails?.name || "Product"}
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  e.target.src = "/image/placeholder_600x.webp";
+                }}
+              />
+            </div>
           </>
         ) : (
           <div className="cursor-pointer">
-            <Image
-              width={500}
-              height={500}
-              src={PlaceHolderImg}
-              alt="prod-1"
-              priority
-              id="product_view"
+            <img
+              src={getProductImage(productDetails)}
+              alt={productDetails?.name || "Product"}
+              className="w-full h-full object-contain"
+              onError={(e) => {
+                e.target.src = "/image/placeholder_600x.webp";
+              }}
             />
           </div>
         )}

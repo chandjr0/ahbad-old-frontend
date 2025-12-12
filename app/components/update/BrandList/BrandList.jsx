@@ -34,22 +34,14 @@ const BrandList = () => {
             <h2 className="text-title text-center mb-10">Brand List</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-8 gap-4">
                 {brands?.map((brand) => (
-                    // <div key={brand?.id}
-                    //     className="bg-white shadow-md border rounded-lg p-4 flex justify-center items-center transition-transform transform hover:scale-105"
-                    // >
-                    //     <img
-                    //         src={`${imageBasePath}/${brand?.image}`}
-                    //         alt={brand.name}
-                    //         className="w-24 h-24 object-contain"
-                    //     />
-                    // </div>
-                    <Link href={`/product-by-brand/${brand?.slug}`} key={brand?.id}
+                    <Link href={`/product-by-brand/${brand?.slug}`} key={brand?._id || brand?.slug}
                         className="bg-white shadow-md border rounded-lg p-4 flex justify-center items-center transition-transform transform hover:scale-105"
                     >
                         <img
-                            src={`${imageBasePath}/${brand?.image}`}
-                            alt={brand.name}
+                            src={brand?.image ? `${imageBasePath}/${brand.image}` : "/image/placeholder_600x.webp"}
+                            alt={brand?.name || 'Brand'}
                             className="w-24 h-24 object-contain"
+                            onError={(e) => { e.target.src = "/image/placeholder_600x.webp"; }}
                         />
                     </Link>
                 ))}

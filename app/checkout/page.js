@@ -897,15 +897,6 @@ const Checkout = () => {
 
   return (
     <>
-      <head>
-        <title> {`${siteData?.data?.data?.shopName}/checkout`}</title>
-        <meta
-          name="description"
-          content={`${siteData?.data?.data?.shopName} - ${siteData?.data?.data?.subTitle}`}
-        />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </head>
-
       {/* Google Tag Manager  */}
       {gtmPurchase && <Gtm data={gtmPurchase} />}
 

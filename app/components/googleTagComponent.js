@@ -28,16 +28,12 @@ const MetaPixel = () => {
  }, [rsleftMenuRef]);
 
 
-    const tagManagerArgs = {
-        gtmId: settingsData?.allScript?.googleScript?.tagManager || "",
-        // gtmId: "GTM-WSXGSWC6",
-
-      };
-     
-       
-      useEffect(()=>{
-          TagManager.initialize(tagManagerArgs);
-      },[settingsData])
+    useEffect(()=>{
+        const gtmId = settingsData?.allScript?.googleScript?.tagManager;
+        if (gtmId && gtmId.trim() !== "") {
+          TagManager.initialize({ gtmId });
+        }
+    },[settingsData])
 
 
   return <></>

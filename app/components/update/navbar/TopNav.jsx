@@ -53,7 +53,7 @@ const TopNav = ({ setShowSearchBar, showSearchBar }) => {
             </div>
             <Link href="/">
               <Image
-                src={`${imageBasePath}/${siteView?.logoImg}`}
+                src={siteView?.logoImg ? `${imageBasePath}/${siteView.logoImg}` : "/image/placeholder_600x.webp"}
                 width={159}
                 height={51}
                 alt="logo image"
@@ -86,9 +86,9 @@ const TopNav = ({ setShowSearchBar, showSearchBar }) => {
               </Link>
 
               {/* User Component (Shown on larger screens) */}
-              <p className="hidden md:block">
+              <div className="hidden md:block">
                 <BigscreenUserCompo />
-              </p>
+              </div>
             </div>
           </div>
         </div>

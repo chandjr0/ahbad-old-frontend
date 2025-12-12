@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'; // Use 'next/router' if using older
 import ProductCard2 from '@/app/components/update/landing-page/big-sales/ProductCard2';
 import Custom404 from '@/app/components/Custom404';
 import { hostname, imageBasePath } from '@/config';
+import { getProductImage } from '@/app/utils/getProductImage';
 
 const BrandProduct = () => {
     const router = useRouter();
@@ -29,6 +30,18 @@ const BrandProduct = () => {
 
             if (page === 1) {
                 setBrandsList(response.data);
+                // Debug: Log first product image URL (temporary)
+                if (response.data?.data?.[0]) {
+                    const firstProduct = response.data.data[0];
+                    const imageUrl = getProductImage(firstProduct);
+                    console.log('🔍 DEBUG - First product image URL:', imageUrl);
+                    console.log('🔍 DEBUG - Product data:', {
+                        galleryImage: firstProduct?.galleryImage,
+                        image: firstProduct?.image,
+                        thumbImage: firstProduct?.thumbImage,
+                        images: firstProduct?.images
+                    });
+                }
             } else {
                 // Append new products to existing list
                 setBrandsList(prevState => ({

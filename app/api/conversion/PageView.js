@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import { usePathname } from "next/navigation";
 import sdkEventsApi from "../sdkEventsApi";
 import useFbclid from "../useFbclid";
 import FacebookPixel from "../FacebookPixel";
@@ -26,22 +27,54 @@ export function getFormattedEventDetails(timestamp) {
 const PageView = () => {
   const fbclid = useFbclid();
   const { settingsData } = useStatus();
-  const [eventData, setEventData] = useState([]);
+  const pathname = usePathname();
+  const [eventData, setEventData] = useState(null);
+  const hasFiredRef = useRef(false);
+  const lastPathnameRef = useRef(null);
 
   useEffect(() => {
+    // Reset if pathname changed (new page view)
+    if (lastPathnameRef.current !== pathname) {
+      hasFiredRef.current = false;
+      lastPathnameRef.current = pathname;
+      setEventData(null);
+    }
+
+    // Early exit if already fired for this page view
+    if (hasFiredRef.current) {
+      return;
+    }
+
+    // Early exit if FB pixel ID not configured
+    if (!settingsData?.allScript?.fbScript?.header) {
+      return;
+    }
+
+    // Early exit if fbclid not available
+    if (!fbclid) {
+      return;
+    }
 
     const fetchConversionApi = async () => {
       try {
-        const fullUrl = `${window.location.origin}${window.location.pathname}`;
+        const fullUrl = typeof window !== "undefined" 
+          ? `${window.location.origin}${window.location.pathname}`
+          : "";
+        
         const conversionApiData = {
-          fbClickId: fbclid || "", // Use fbclid or send an empty string
+          fbClickId: fbclid || "",
           fullUrl,
           eventType: "PageView",
         };
+        
         const response = await sdkEventsApi(conversionApiData);
         const data = response?.data || {};
-        const time = getFormattedEventDetails(data?.currentTimestamp);
+        
+        if (!data?.currentTimestamp) {
+          return;
+        }
 
+        const time = getFormattedEventDetails(data.currentTimestamp);
 
         if (data?.userIpAddress) {
           const eventPayload = {
@@ -49,7 +82,7 @@ const PageView = () => {
             plugin: "StoreX",
             client_ip_address: data?.userIpAddress,
             client_user_agent: data?.userAgent,
-            ...window.address,
+            ...(typeof window !== "undefined" && window.address ? window.address : {}),
             eventID: data?.eventId,
             event: "PageView",
             event_time: time?.formattedTime,
@@ -61,27 +94,26 @@ const PageView = () => {
           };
 
           setEventData(eventPayload);
+          hasFiredRef.current = true;
         }
       } catch (error) {
-        console.error("Error fetching conversion API:", error);
+        // Silent fail - don't spam console
       }
     };
 
-    if (fbclid) {
-      fetchConversionApi(); // Fetch API only if fbclid is defined (including empty string)
-    }
-  }, [fbclid]);
+    fetchConversionApi();
+  }, [fbclid, pathname, settingsData?.allScript?.fbScript?.header]);
+
+  if (!settingsData?.allScript?.fbScript?.header || !eventData?.eventID) {
+    return null;
+  }
 
   return (
-    <div>
-      {settingsData?.allScript?.fbScript?.header && eventData?.eventID && (
-        <FacebookPixel
-          eventType="PageView"
-          eventData={eventData}
-          pixelId={settingsData?.allScript?.fbScript?.header}
-        />
-      )}
-    </div>
+    <FacebookPixel
+      eventType="PageView"
+      eventData={eventData}
+      pixelId={settingsData.allScript.fbScript.header}
+    />
   );
 };
 

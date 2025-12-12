@@ -80,13 +80,21 @@ function StatusProvider({ children }) {
   },[])
 
   const fetchLandingPageData = async () => {
-    const response = await axios.get(`${hostname}/api/v1/setting/admin/site-view`);
-    setSiteView(response.data?.data)
+    try {
+      const response = await axios.get(`${hostname}/api/v1/setting/admin/site-view`);
+      setSiteView(response?.data?.data || []);
+    } catch (error) {
+      setSiteView([]);
+    }
   }
 
   const fetchCategoryData = async () => {
-    const response = await axios.get(`${hostname}/api/v1/category/fetch-all`);
-    setAllCategories(response.data?.data)
+    try {
+      const response = await axios.get(`${hostname}/api/v1/category/fetch-all`);
+      setAllCategories(Array.isArray(response?.data?.data) ? response.data.data : []);
+    } catch (error) {
+      setAllCategories([]);
+    }
   }
 
  
