@@ -4,6 +4,7 @@ import { useStatus } from "@/context/contextStatus";
 import postRequest from "@/lib/postRequest";
 import Image from "next/image";
 import React, { useState } from "react";
+import { toast } from "react-toastify";
 
 const SideCart = () => {
   const { cartItems, setCartItems } = useStatus();
@@ -25,7 +26,15 @@ const SideCart = () => {
 
       try {
         let res = await postRequest(`product/admin-customer/check-product-stock`, obj);
-        if (res && res?.data?.stock > qty) {
+        // Ensure stock and qty are numbers for comparison
+        const availableStock = typeof res?.data?.stock === 'string' 
+          ? parseFloat(res.data.stock) || 0 
+          : res?.data?.stock || 0;
+        const currentQty = typeof qty === 'string' 
+          ? parseFloat(qty) || 0 
+          : qty || 0;
+        
+        if (res && res?.data && availableStock > currentQty) {
           const updatedCartItems = [...cartItems];
           updatedCartItems[index].quantity += 1;
           setCartItems(updatedCartItems); // Update the state with the new array
@@ -36,17 +45,23 @@ const SideCart = () => {
         }
       } catch (error) {
         console.log("error in stock check", error);
+        toast.error("Error checking stock. Please try again.");
       }
     }
   };
 
   const decrement = async (index) => {
-    if (cartItems[index]?.quantity > 1) {
-      const updatedCartItems = [...cartItems]; // Create a new array
-      updatedCartItems[index].quantity -= 1;
-      setCartItems(updatedCartItems); // Update the state with the new array
-      encryptData(updatedCartItems);
-      setRenderMe(!renderMe); // Force re-render
+    try {
+      if (cartItems[index]?.quantity > 1) {
+        const updatedCartItems = [...cartItems]; // Create a new array
+        updatedCartItems[index].quantity -= 1;
+        setCartItems(updatedCartItems); // Update the state with the new array
+        encryptData(updatedCartItems);
+        setRenderMe(!renderMe); // Force re-render
+      }
+    } catch (error) {
+      console.error("Error decrementing quantity:", error);
+      toast.error("Error updating quantity. Please try again.");
     }
   };
 
@@ -152,32 +167,42 @@ const SideCart = () => {
                     <div className="flex items-center gap-2 mt-1">
                       <p className="text-[12px]"> Qty </p>
                       <div className="flex items-center">
-                        <p
-                          onClick={() => decrement(index)}
-                          className="text-sm rounded border border-[#c3c1c1] px-2 text-center cursor-pointer  "
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            decrement(index);
+                          }}
+                          className="text-sm rounded border border-[#c3c1c1] px-2 text-center cursor-pointer hover:bg-gray-100 transition-colors"
                         >
                           -
-                        </p>
+                        </button>
                         <p className="px-2 text-sm">{item?.quantity}</p>
-                        {/* <input
-                          type="text"
-                          className="w-[40px]  pl-3 outline-none"
-                          value={item?.quantity}
-                          
-                        /> */}
-                        <p
-                          onClick={() =>
-                            increment(index, item?.stock, item?.quantity, item)
-                          }
-                          className="text-sm rounded border border-[#c3c1c1] px-2 text-center cursor-pointer "
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            increment(index, item?.stock, item?.quantity, item);
+                          }}
+                          className="text-sm rounded border border-[#c3c1c1] px-2 text-center cursor-pointer hover:bg-gray-100 transition-colors"
                         >
                           +
-                        </p>
+                        </button>
                       </div>
                     </div>
-                    <div className=" cursor-pointer" onClick={() => removeItem(index)}>
+                    <button
+                      type="button"
+                      className="cursor-pointer"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        removeItem(index);
+                      }}
+                    >
                       <i className="ri-delete-bin-5-line text-red-400 font-bold"></i>
-                    </div>
+                    </button>
                   </div>
                 </div>
               </div>

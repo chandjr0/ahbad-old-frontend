@@ -1,6 +1,7 @@
 "use client";
 
-import { hostname } from "@/config";
+import { imageBasePath } from "@/config";
+import { getProductImage } from "@/app/utils/getProductImage";
 import postRequest from "@/lib/postRequest";
 import Image from "next/image";
 import Link from "next/link";
@@ -43,8 +44,10 @@ const BigscreenSearchCompo = () => {
         data
       );
       
-      if (res?.success) {
-        setsearchData(res?.data || []);
+      if (res?.success && res?.data) {
+        // Handle both array response and object with data array
+        const products = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+        setsearchData(products);
       } else {
         setsearchData([]);
       }
@@ -99,11 +102,11 @@ const BigscreenSearchCompo = () => {
             >
               <div className="p-3 flex items-center border-b">
                 <div className="w-[70px] h-[70px] relative mr-3 flex-shrink-0">
-                  <Image
+                  <img
                     alt={item?.name || "Product image"}
-                    fill
-                    src={`${hostname}/${item?.galleryImage[0]}`}
-                    className="object-cover"
+                    src={getProductImage(item)}
+                    className="w-full h-full object-cover"
+                    onError={(e) => { e.target.src = "/image/placeholder_600x.webp"; }}
                   />
                 </div>
                 <div className="flex-1">

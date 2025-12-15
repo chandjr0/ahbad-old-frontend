@@ -61,9 +61,10 @@ const CartoverviewSection = ({
 
   const increment = async (index, stock, qty, item) => {
     if (item?.isCombo) {
-      cartItems[index].quantity += 1;
-      setCartItems(cartItems);
-      encryptData(cartItems);
+      const updatedCartItems = [...cartItems]; // Create a new array
+      updatedCartItems[index].quantity += 1;
+      setCartItems(updatedCartItems);
+      encryptData(updatedCartItems);
       setRenderMe(!renderMe);
     } else {
       const obj = {
@@ -76,11 +77,20 @@ const CartoverviewSection = ({
           `product/admin-customer/check-product-stock`,
           obj
         );
-        if (res) {
-          if (res?.data?.stock > qty) {
-            cartItems[index].quantity += 1;
-            setCartItems(cartItems);
-            encryptData(cartItems);
+        if (res && res?.data) {
+          // Ensure stock and qty are numbers for comparison
+          const availableStock = typeof res?.data?.stock === 'string' 
+            ? parseFloat(res.data.stock) || 0 
+            : res?.data?.stock || 0;
+          const currentQty = typeof qty === 'string' 
+            ? parseFloat(qty) || 0 
+            : qty || 0;
+          
+          if (availableStock > currentQty) {
+            const updatedCartItems = [...cartItems]; // Create a new array
+            updatedCartItems[index].quantity += 1;
+            setCartItems(updatedCartItems);
+            encryptData(updatedCartItems);
             setRenderMe(!renderMe);
           } else {
             toast.warning("Warning! No More Stock Left");
@@ -88,15 +98,17 @@ const CartoverviewSection = ({
         }
       } catch (error) {
         console.log("error in stock check", error);
+        toast.error("Error checking stock. Please try again.");
       }
     }
   };
 
   const decrement = async (index) => {
     if (cartItems[index]?.quantity > 1) {
-      cartItems[index].quantity -= 1;
-      setCartItems(cartItems);
-      encryptData(cartItems);
+      const updatedCartItems = [...cartItems]; // Create a new array
+      updatedCartItems[index].quantity -= 1;
+      setCartItems(updatedCartItems);
+      encryptData(updatedCartItems);
       setRenderMe(!renderMe);
     }
   };

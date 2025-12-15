@@ -7,50 +7,33 @@ import Gtm from "@/app/Gtm";
 import { baseUrl, imageBasePath } from "@/config";
 import request from "@/lib/request";
 import { notFound } from "next/navigation";
+import { getProductImage } from "@/app/utils/getProductImage";
 
 async function getProductDetails(slug) {
   try {
     let res = await request(
       `product/admin-customer/view-with-similar/${slug}?similarLimit=12`
     );
-    if (res) {
-      return res;
+    if (res?.data?.success && res?.data?.data) {
+      return res.data;
     }
+    return null;
   } catch (error) {
     console.log("err in getProducts", error);
+    return null;
   }
 }
 
-// Function to get the best product image for sharing
-function getProductImage(product) {
-  // First, check if galleryImage exists and has images
-  if (product?.galleryImage && product.galleryImage.length > 0) {
-    return `${imageBasePath}/${product.galleryImage[0]}`;
-  }
-  
-  // If no gallery images but it's a variant product, get first variation image
-  if (product?.isVariant && product.variations && product.variations.length > 0) {
-    // Look through all variations to find one with images
-    for (const variation of product.variations) {
-      if (variation.images && variation.images.length > 0) {
-        return `${imageBasePath}/${variation.images[0]}`;
-      }
-    }
-  }
-  
-  // Fallback to a default image if nothing else is available
-  return `${baseUrl}/image/logo.png`;
-}
 
 export default async function ProductDetails(params) {
   const productInfo = await getProductDetails(params.params.slug);
 
-  if (!productInfo) {
+  if (!productInfo || !productInfo?.success || !productInfo?.data) {
     notFound();
   }
 
   // Get the best image for SEO
-  const productImage = getProductImage(productInfo?.data?.data);
+  const productImage = getProductImage(productInfo?.data);
 
   return (
     <>
@@ -118,7 +101,7 @@ export default async function ProductDetails(params) {
         }}
       /> */}
       <div>
-        <DetailsMain info={productInfo?.data?.data} />
+        <DetailsMain info={productInfo?.data} />
       </div>
     </>
   );

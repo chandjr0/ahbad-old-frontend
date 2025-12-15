@@ -334,16 +334,20 @@ const ProductDetails = ({ info }) => {
         `product/admin-customer/check-product-stock`,
         obj
       );
-      if (res) {
-        if (res?.data?.stock >= count + 1) {
+      if (res?.success && res?.data) {
+        const stock = typeof res.data.stock === 'string' ? parseFloat(res.data.stock) : res.data.stock;
+        if (stock >= count + 1) {
           setCount(count + 1);
           toast.success("Success! Quantity Increased");
         } else {
           toast.warning("Warning! No More Stock Left");
         }
+      } else {
+        toast.error(res?.message || "Failed to check stock");
       }
     } catch (error) {
       console.log("error in stock check", error);
+      toast.error("Error checking stock availability");
     }
   };
 

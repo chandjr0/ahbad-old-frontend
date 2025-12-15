@@ -10,7 +10,8 @@ import { RxCross2 } from "react-icons/rx";
 import { BiSearch } from "react-icons/bi";
 import postRequest from "@/lib/postRequest";
 import Link from "next/link";
-import { hostname } from "@/config";
+import { imageBasePath } from "@/config";
+import { getProductImage } from "@/app/utils/getProductImage";
 import Image from "next/image";
 import BigscreenUserCompo from "./BigscreenUserCompo";
 
@@ -45,15 +46,31 @@ const SmallCartCompo = () => {
 
   const search = async (val) => {
     setsearchKey(val);
+    if (!val.trim()) {
+      setsearchData([]);
+      return;
+    }
+    
     const data = {
       value: val,
     };
-    let res = await postRequest(
-      "product/admin-customer/search?page=1&limit=10",
-      data
-    );
-    if (res?.success) {
-      setsearchData(res?.data);
+    
+    try {
+      let res = await postRequest(
+        "product/admin-customer/search?page=1&limit=10",
+        data
+      );
+      
+      if (res?.success && res?.data) {
+        // Handle both array response and object with data array
+        const products = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+        setsearchData(products);
+      } else {
+        setsearchData([]);
+      }
+    } catch (error) {
+      console.error("Search error:", error);
+      setsearchData([]);
     }
   };
 
@@ -138,10 +155,11 @@ const SmallCartCompo = () => {
                     className="m-2 flex items-center justify-start bg-gray-100"
                   >
                     <div className="w-[70px] h-[70px] relative  mr-10">
-                      <Image
-                        alt=""
-                        fill
-                        src={`${hostname}/${item?.galleryImage[0]}`}
+                      <img
+                        alt={item?.name || "Product"}
+                        src={getProductImage(item)}
+                        className="w-full h-full object-cover"
+                        onError={(e) => { e.target.src = "/image/placeholder_600x.webp"; }}
                       />
                     </div>
                     <div>
