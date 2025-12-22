@@ -6,8 +6,10 @@ import Link from "next/link";
 import ProductCard2 from "../landing-page/big-sales/ProductCard2";
 
 const CategoryWiseProduct = ({ title, slug, item, type }) => {
-
-
+  // Defensive check: Don't render if no items
+  if (!item || !Array.isArray(item) || item.length === 0) {
+    return null;
+  }
 
   return (
     <div className="base-container section-gap py-4">

@@ -214,8 +214,8 @@ const Checkout = () => {
       deliveryAddress: {
         name: name,
         phone: phone,
-        cityId: city._id,
-        zoneId: zone._id,
+        cityId: city?._id || city?.city_id, // Support both MongoDB _id and city_id
+        zoneId: zone?._id || zone?.zone_id, // Support both MongoDB _id and zone_id
         address: address,
       },
     };
@@ -735,25 +735,85 @@ const Checkout = () => {
     const getDistrict = async () => {
       try {
         let res = await request(`courier-service/pathao/get-areas`);
-        if (res?.data?.success) {
-          setDistrictList(res?.data?.data);
+        if (res?.data?.success && res?.data?.data) {
+          const districts = Array.isArray(res.data.data) ? res.data.data : [];
+          setDistrictList(districts);
+          if (districts.length === 0) {
+            console.warn("No districts found. Please sync Pathao data via admin panel.");
+          }
+        } else {
+          setDistrictList([]);
+          console.error("Failed to fetch districts:", res?.data?.message);
         }
       } catch (error) {
-        console.log("err in getDistrict");
+        console.error("Error in getDistrict:", error);
+        setDistrictList([]);
       }
     };
     getDistrict();
   }, []);
 
   const getDistrictWiseThana = async (id) => {
+    console.log("🔵 getDistrictWiseThana called with ID:", id, typeof id);
     setThana("select");
+    setThanaList([]); // Reset thana list
+    if (!id || id === "select") {
+      console.log("⚠️ Invalid ID, returning early");
+      return;
+    }
     try {
-      let res = await request(`courier-service/pathao/get-zones/${id}`);
-      if (res?.data?.success) {
-        setThanaList(res?.data?.data);
+      // Ensure id is a number (city_id is stored as number in database)
+      const cityId = typeof id === 'string' ? parseInt(id, 10) : id;
+      if (isNaN(cityId)) {
+        console.error("❌ Invalid district ID:", id);
+        setThanaList([]);
+        return;
+      }
+      
+      console.log(`📡 Fetching thanas for cityId: ${cityId}`);
+      const url = `courier-service/pathao/get-zones/${cityId}`;
+      console.log(`📡 API URL: ${url}`);
+      
+      let res = await request(url);
+      
+      // request() returns axios response object, so res.data is the API response
+      if (!res) {
+        console.error("❌ No response from API - request returned null");
+        setThanaList([]);
+        return;
+      }
+      
+      if (!res.data) {
+        console.error("❌ No data in response:", res);
+        setThanaList([]);
+        return;
+      }
+      
+      console.log("✅ Thana API response:", res.data);
+      console.log("✅ Success:", res.data?.success);
+      console.log("✅ Data:", res.data?.data);
+      console.log("✅ Data type:", Array.isArray(res.data?.data) ? "array" : typeof res.data?.data);
+      console.log("✅ Data length:", Array.isArray(res.data?.data) ? res.data.data.length : "N/A");
+      
+      if (res.data?.success && res.data?.data) {
+        const thanas = Array.isArray(res.data.data) ? res.data.data : [];
+        console.log(`✅ Found ${thanas.length} thanas for district ${cityId}`);
+        if (thanas.length > 0) {
+          console.log("✅ Thana names:", thanas.map(t => t.zone_name).join(", "));
+        }
+        setThanaList(thanas);
+        if (thanas.length === 0) {
+          console.warn(`⚠️ No thanas found for district ID: ${cityId}`);
+        }
+      } else {
+        setThanaList([]);
+        console.error("❌ Failed to fetch thanas. Success:", res.data?.success);
+        console.error("❌ Data:", res.data?.data);
+        console.error("❌ Message:", res.data?.message);
       }
     } catch (error) {
-      console.log("err in getDistrictWiseThana");
+      console.error("❌ Exception in getDistrictWiseThana:", error);
+      setThanaList([]);
     }
   };
 

@@ -19,12 +19,17 @@ const AddressSection = ({
   districtList,
   isError,
   getDistrictWiseThana,
-  thanaList,
+  thanaList = [],
   // getThanaWiseArea,
   // areaList,
   // selectedArea,
   // setSelectedArea
 }) => {
+  // Debug: Log thanaList changes
+  useEffect(() => {
+    console.log("AddressSection - thanaList updated:", thanaList);
+    console.log("AddressSection - thanaList length:", thanaList?.length);
+  }, [thanaList]);
 
   const [isValid, setIsValid] = useState(true);
 
@@ -143,11 +148,15 @@ const AddressSection = ({
               className="bg-gray-50 mt-2 h-[40px] border border-gray-300 text-black text-sm rounded-lg  block w-full p-2.5 appearance-none focus:border-secondary outline-none"
             >
               <option value={"select"}>Select</option>
-              {thanaList?.map((item, index) => (
-                <option key={index} value={item?.zone_id}>
-                  {item?.zone_name}
-                </option>
-              ))}
+              {thanaList && thanaList.length > 0 ? (
+                thanaList.map((item, index) => (
+                  <option key={index} value={item?.zone_id}>
+                    {item?.zone_name}
+                  </option>
+                ))
+              ) : (
+                <option disabled>No thanas available</option>
+              )}
             </select>
             {thana == "select" && isError ? (
               <div className="mt-2 md:left-0 left-0 text-red-600 text-xs pl-1">

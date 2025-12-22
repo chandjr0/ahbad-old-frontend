@@ -11,10 +11,15 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 
 const Categorysection = ({ categoryData }) => {
+  // Defensive check: Don't render if no categories
+  if (!categoryData || !Array.isArray(categoryData) || categoryData.length === 0) {
+    return null;
+  }
+
   return (
     <div className="base-container">
       <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-4">
-        {categoryData?.map((item, index) => (
+        {categoryData.map((item, index) => (
           <Link
             href={`/category/${item?.slug}`}
             className="group relative hover:bg-primary rounded-lg   transition duration-300 ease-in-out"
