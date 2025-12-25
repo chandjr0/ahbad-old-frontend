@@ -14,9 +14,17 @@ async function getProductDetails(slug) {
     let res = await request(
       `product/admin-customer/view-with-similar/${slug}?similarLimit=12`
     );
+    
+    // Handle different response structures
     if (res?.data?.success && res?.data?.data) {
       return res.data;
     }
+    
+    // Log for debugging
+    if (res) {
+      console.log("API Response:", JSON.stringify(res.data, null, 2));
+    }
+    
     return null;
   } catch (error) {
     console.log("err in getProducts", error);
@@ -29,6 +37,7 @@ export default async function ProductDetails(params) {
   const productInfo = await getProductDetails(params.params.slug);
 
   if (!productInfo || !productInfo?.success || !productInfo?.data) {
+    console.log("Product not found - productInfo:", productInfo);
     notFound();
   }
 

@@ -24,7 +24,8 @@ const DesktopImageSection2 = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
-  const [isImageLoading, setIsImageLoading] = useState(true);
+  // Initialize based on imageGallery to prevent hydration mismatch
+  const [isImageLoading, setIsImageLoading] = useState(!imageGallery || imageGallery.length === 0);
 
   useEffect(() => {
     if (imageGallery && imageGallery.length > 0) {

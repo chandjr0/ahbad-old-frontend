@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import DesktopImageSection from "./DesktopImageSection";
@@ -25,11 +27,10 @@ import ViewContent from "@/app/api/conversion/ViewContent";
 import AddToCart from "@/app/api/conversion/AddToCart";
 
 const ProductDetails2 = ({ info }) => {
-  const cookie = parseCookies();
   const router = useRouter();
   const [showButtons, setShowButtons] = useState(false);
   const firstDivRef = useRef(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [cookie, setCookie] = useState(null);
   const {
     cartItems,
     setCartItems,
@@ -45,12 +46,40 @@ const ProductDetails2 = ({ info }) => {
   const [isStock, setIsStock] = useState(true);
   const [totalStock, setTotalStock] = useState(0);
   const [selectVariationImage, setSelectVariationImage] = useState();
-  const [productImages, setProductImages] = useState([]);
-  const [imagesWithVariationIds, setImagesWithVariationIds] = useState([]);
+  // Initialize productImages from info to prevent hydration mismatch
+  const getInitialImages = (productInfo) => {
+    if (!productInfo) return [[], []];
+    
+    const galleryImages = (productInfo.galleryImage || []).map(img => ({
+      url: img,
+      variationId: null
+    }));
+
+    const variationImages = productInfo.variations?.reduce((acc, variation) => {
+      if (variation.images && variation.images.length > 0) {
+        const imagesWithId = variation.images.map(img => ({
+          url: img,
+          variationId: variation._id
+        }));
+        acc.push(...imagesWithId);
+      }
+      return acc;
+    }, []);
+    
+    const uniqueImagesWithIds = [...variationImages, ...galleryImages].filter((item, index, self) =>
+      index === self.findIndex((t) => t.url === item.url)
+    );
+    
+    return [uniqueImagesWithIds.map(item => item.url), uniqueImagesWithIds];
+  };
+  
+  const [initialImages, initialImagesWithIds] = getInitialImages(info);
+  const [productImages, setProductImages] = useState(initialImages);
+  const [imagesWithVariationIds, setImagesWithVariationIds] = useState(initialImagesWithIds);
 
   const [diffTimes, setDiffTimes] = useState();
 
-  const [currentDate, setCurrentDate] = useState(Date.now());
+  const [currentDate, setCurrentDate] = useState(0);
   const [displayPrice, setDisplayPrice] = useState({
     regularPrice: null,
     sellingPrice: null,
@@ -59,6 +88,14 @@ const ProductDetails2 = ({ info }) => {
   const [gtmProductView, setGtmProductView] = useState({});
   const [gtmCart, setGtmCart] = useState({});
   const [isAddedToCart, setIsAddedToCart] = useState(false);
+  const [whatsappLink, setWhatsappLink] = useState("");
+  const [messengerLink, setMessengerLink] = useState("");
+
+  // Initialize client-only values in useEffect to prevent hydration mismatch
+  useEffect(() => {
+    setCookie(parseCookies());
+    setCurrentDate(Date.now());
+  }, []);
 
   useEffect(() => {
     const calculatePrice = () => {
@@ -266,6 +303,13 @@ const ProductDetails2 = ({ info }) => {
       }
     }
   }, [info]);
+  
+  // Set initial selectVariationImage if not set
+  useEffect(() => {
+    if (!selectVariationImage && productImages.length > 0) {
+      setSelectVariationImage(productImages[0]);
+    }
+  }, [productImages, selectVariationImage]);
 
   // Handle attribute selection for variations
   const handleAttribute = (value, attributeName) => {
@@ -891,59 +935,49 @@ const ProductDetails2 = ({ info }) => {
     }
   };
 
+  // Compute social media links in useEffect to prevent hydration mismatch
+  useEffect(() => {
+    if (info && settingsData && displayPrice) {
+      const discountPrice =
+        displayPrice?.regularPrice -
+        (displayPrice?.flashPrice || displayPrice?.sellingPrice);
+
+      if (settingsData?.socialMediaSharing?.whatsappNumber) {
+        const link = `https://api.whatsapp.com/send/?phone=88${settingsData.socialMediaSharing.whatsappNumber}&text=${encodeURI(
+          `Hi. I Want To Buy ${info?.name} | Price: Regular ${displayPrice?.regularPrice
+          } TK, After Discount ${displayPrice?.flashPrice || displayPrice?.sellingPrice
+          } TK (You Save: ${discountPrice} TK) | ${baseUrl}/product/${info?.slug}`
+        )}`;
+        setWhatsappLink(link);
+      }
+
+      if (settingsData?.socialMediaSharing?.facebookPageName) {
+        const link = `https://m.me/${settingsData.socialMediaSharing.facebookPageName}?text=${encodeURI(
+          `Hi. I Want To Buy ${info?.name} | Price: Regular ${displayPrice?.regularPrice
+          } TK, After Discount ${displayPrice?.flashPrice || displayPrice?.sellingPrice
+          } TK (You Save: ${discountPrice} TK) | ${baseUrl}/product/${info?.slug}`
+        )}`;
+        setMessengerLink(link);
+      }
+    }
+  }, [info, settingsData, displayPrice]);
+
   const breadCumbs = [
     { name: "Home", url: "/" },
     {
       name: "product-details",
       // url: "/product-details",
     },
-    { name: `${info?.slug}`, url: `/${info?.slug}` },
+    { name: info?.slug || "", url: `/${info?.slug || ""}` },
   ];
 
-  // const whatsappLink = `https://api.whatsapp.com/send/?phone=88${siteSettings.productDetailsWhatsappNumber}&text=${encodeURI(
-  //   `Hi ${siteSettings.brandname}. I Want To Buy ${product.title} | Price: ${calculatedPrice}${settings.currency} | ${settings.httpPath}/products/${product.slug}`
-  // )}`;
-  const discountPrice =
-    displayPrice?.regularPrice -
-    (displayPrice?.flashPrice || displayPrice?.sellingPrice);
-
-  const whatsappLink = `https://api.whatsapp.com/send/?phone=88${settingsData?.socialMediaSharing?.whatsappNumber
-    }&text=${encodeURI(
-      `Hi. I Want To Buy ${info?.name} | Price: Regular ${displayPrice?.regularPrice
-      } TK, After Discount ${displayPrice?.flashPrice || displayPrice?.sellingPrice
-      } TK (You Save: ${discountPrice} TK) | ${baseUrl}/product/${info?.slug}`
-    )}`;
-
-  const messengerLink = `https://m.me/${settingsData?.socialMediaSharing?.facebookPageName
-    }?text=${encodeURI(
-      `Hi. I Want To Buy ${info?.name} | Price: Regular ${displayPrice?.regularPrice
-      } TK, After Discount ${displayPrice?.flashPrice || displayPrice?.sellingPrice
-      } TK (You Save: ${discountPrice} TK) | ${baseUrl}/product/${info?.slug}`
-    )}`;
-
-  // Set loading state when info changes
-  useEffect(() => {
-    if (info) {
-      setIsLoading(false);
-    }
-  }, [info]);
+  // Early return if no info - but ensure consistent rendering
+  if (!info || !info._id) {
+    return null;
+  }
 
   return (
     <>
-      {isLoading ? (
-        <div className="min-h-screen flex items-center justify-center bg-white">
-          <div className="flex flex-col items-center gap-4">
-            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
-            <p className="text-gray-500 text-lg">Loading product details...</p>
-          </div>
-        </div>
-      ) : !info ? (
-        <div className="min-h-screen flex items-center justify-center bg-white">
-          <div className="flex flex-col items-center gap-4">
-            <p className="text-gray-500 text-lg">No product details available</p>
-          </div>
-        </div>
-      ) : (
         <div>
           <ScrollToTop />
           {gtmProductView?.value && <Gtm data={gtmProductView} />}
@@ -1173,7 +1207,7 @@ const ProductDetails2 = ({ info }) => {
                 )}
 
                 <div className="mt-3 md:w-[421px] flex gap-2">
-                  {settingsData?.socialMediaSharing?.whatsappNumber && (
+                  {whatsappLink && (
                     <a
                       href={whatsappLink}
                       target="_blank"
@@ -1184,7 +1218,7 @@ const ProductDetails2 = ({ info }) => {
                     </a>
                   )}
 
-                  {settingsData?.socialMediaSharing?.facebookPageName && (
+                  {messengerLink && (
                     <a
                       href={messengerLink}
                       target="_blank"
@@ -1346,7 +1380,6 @@ const ProductDetails2 = ({ info }) => {
             </div>
           </div>
         </div>
-      )}
     </>
   );
 };

@@ -55,7 +55,7 @@ const BigscreenUserCompo = () => {
             <div>
               {token ? (
                 <Menu.Button className="max-w-xs bg-white flex items-center space-x-2 text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:myblue-500">
-                  <span className="sr-only">Open user menu</span>
+                  <div className="sr-only">Open user menu</div>
 
                   <div className="h-9 w-9 rounded-full border border-gray-300 flex justify-center items-center">
                     <svg

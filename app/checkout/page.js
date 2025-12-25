@@ -206,9 +206,9 @@ const Checkout = () => {
       onlinePaymentReq: paymentOption !== "cash" ? true : false,
       host: domain,
       customerCharge: {
-        totalProductPrice: subTotal,
-        discountPrice: isDeliveryPromo ? 0 : promoDiscount,
-        deliveryCharge: isDeliveryPromo ? 0 : deliveryOption?.amount,
+        totalProductPrice: Number(subTotal) || 0,
+        discountPrice: isDeliveryPromo ? 0 : (Number(promoDiscount) || 0),
+        deliveryCharge: isDeliveryPromo ? 0 : (Number(deliveryOption?.amount) || 0),
         totalPayTk: 0,
       },
       deliveryAddress: {
@@ -223,12 +223,15 @@ const Checkout = () => {
     if (paymentOption !== "cash" && paymentOption !== "amar_pay") {
       data.payment["paymentType"] = paymentInfo?.name + " " + `(${payPhone})`;
       data.payment["details"] = transaction;
-      data.payment["amount"] = isDeliveryPromo
-        ? subTotal
-        : subTotal + deliveryOption?.amount - promoDiscount;
-      data.customerCharge["totalPayTk"] = isDeliveryPromo
-        ? subTotal
-        : subTotal + deliveryOption?.amount - promoDiscount;
+      const deliveryAmount = Number(deliveryOption?.amount) || 0;
+      const promoDiscountAmount = Number(promoDiscount) || 0;
+      const subTotalAmount = Number(subTotal) || 0;
+      const calculatedTotal = isDeliveryPromo
+        ? subTotalAmount
+        : subTotalAmount + deliveryAmount - promoDiscountAmount;
+      
+      data.payment["amount"] = isNaN(calculatedTotal) ? 0 : calculatedTotal;
+      data.customerCharge["totalPayTk"] = isNaN(calculatedTotal) ? 0 : calculatedTotal;
     }
 
     const fbData = {
@@ -355,7 +358,29 @@ const Checkout = () => {
       try {
         if (otp == "otp") {
           if (paymentOption == "amar_pay") {
+            console.log("📦 Order data being sent:", {
+              productsCount: data.products?.length,
+              combosCount: data.combos?.length,
+              cityId: data.deliveryAddress?.cityId,
+              zoneId: data.deliveryAddress?.zoneId,
+              totalProductPrice: data.customerCharge?.totalProductPrice,
+              customerId: data.customerId,
+            });
             let res = await postRequest(`admin-order/customer/create`, data);
+            
+            // Handle 409 Conflict and other errors with detailed logging
+            if (res?.success === false) {
+              console.error("❌ Order creation failed:", {
+                message: res?.message,
+                status: res?.status,
+                data: res?.data,
+              });
+              toast.error(res?.message || "Order creation failed. Please check your cart and try again.");
+              setLoading(false);
+              setIsError(true);
+              return;
+            }
+            
             if (res?.success) {
               // Set token in cookie if present in response
               if (res?.data?.token) {
@@ -417,11 +442,29 @@ const Checkout = () => {
               localStorage.removeItem("myCartMain");
               setLoading(false);
             } else {
-              toast.warning(res?.message);
+              toast.warning(res?.message || "Order creation failed");
               setLoading(false);
+              setIsError(true);
             }
           } else {
+            console.log("📦 Order data being sent:", {
+              productsCount: data.products?.length,
+              combosCount: data.combos?.length,
+              cityId: data.deliveryAddress?.cityId,
+              zoneId: data.deliveryAddress?.zoneId,
+              totalProductPrice: data.customerCharge?.totalProductPrice,
+            });
             let res = await postRequest(`admin-order/customer/create`, data);
+            
+            // Handle 409 Conflict and other errors
+            if (res?.success === false) {
+              console.error("❌ Order creation failed:", res?.message);
+              toast.error(res?.message || "Order creation failed. Please check your cart and try again.");
+              setLoading(false);
+              setIsError(true);
+              return;
+            }
+            
             if (res?.success) {
               // Set token in cookie if present in response
               if (res?.data?.token) {
@@ -822,15 +865,21 @@ const Checkout = () => {
     if (district == 1) {
       setDeliveryOption({
         type: "inside",
-        amount: settingsData?.deliveryCharge?.inside?.amount,
+        amount: Number(settingsData?.deliveryCharge?.inside?.amount) || 0,
       });
-    } else {
+    } else if (district !== "select") {
       setDeliveryOption({
         type: "outside",
-        amount: settingsData?.deliveryCharge?.outside?.amount,
+        amount: Number(settingsData?.deliveryCharge?.outside?.amount) || 0,
+      });
+    } else {
+      // Default to outside with 0 amount if no district selected
+      setDeliveryOption({
+        type: "outside",
+        amount: 0,
       });
     }
-  }, [district]);
+  }, [district, settingsData]);
 
   const breadCumbs = [{ name: "Home", url: "/" }, { name: `checkout` }];
 

@@ -45,18 +45,23 @@ const CartoverviewSection = ({
 
   useEffect(() => {
     let total = 0;
-    setDeliveryOption({
-      type: "outside",
-      amount: deliveryData?.outside?.amount,
-    });
+    // Only set delivery option if deliveryData exists and we don't already have one set
+    if (deliveryData?.outside?.amount !== undefined) {
+      setDeliveryOption({
+        type: "outside",
+        amount: Number(deliveryData?.outside?.amount) || 0,
+      });
+    }
 
     const calculation = async () => {
       cartItems?.map((item, index) => {
-        total = total + item?.price * item.quantity;
+        const price = Number(item?.price) || 0;
+        const quantity = Number(item?.quantity) || 0;
+        total = total + price * quantity;
       });
     };
     calculation();
-    setSubTotal(total);
+    setSubTotal(isNaN(total) ? 0 : total);
   }, [cartItems, renderMe, deliveryData, setDeliveryOption, setSubTotal]);
 
   const increment = async (index, stock, qty, item) => {
@@ -420,7 +425,7 @@ const CartoverviewSection = ({
                     </span>
 
                     <span className="font-bold text-primary text-sm ml-2">
-                      TK. {isDeliveryPromo ? 0 : deliveryData?.inside?.amount}
+                      TK. {isDeliveryPromo ? 0 : (Number(deliveryData?.inside?.amount) || 0)}
                     </span>
                   </label>
                 </div>
@@ -456,7 +461,7 @@ const CartoverviewSection = ({
                     </span>
 
                     <span className="font-bold text-secondary text-sm ml-2">
-                      TK. {isDeliveryPromo ? 0 : deliveryData?.outside?.amount}
+                      TK. {isDeliveryPromo ? 0 : (Number(deliveryData?.outside?.amount) || 0)}
                     </span>
                   </label>
                 </div>
@@ -469,9 +474,15 @@ const CartoverviewSection = ({
 
             <p className="font-bold text-black xls:text-sm xms:text-sm xs:text-xs">
               TK.{" "}
-              {isDeliveryPromo
-                ? `${subTotal}`
-                : `${subTotal + deliveryOption?.amount - promoDiscount}`}
+              {(() => {
+                const deliveryAmount = Number(deliveryOption?.amount) || 0;
+                const promoDiscountAmount = Number(promoDiscount) || 0;
+                const subTotalAmount = Number(subTotal) || 0;
+                const total = isDeliveryPromo
+                  ? subTotalAmount
+                  : subTotalAmount + deliveryAmount - promoDiscountAmount;
+                return isNaN(total) ? 0 : total;
+              })()}
             </p>
           </div>
 
@@ -651,7 +662,15 @@ const CartoverviewSection = ({
               <div className="text-white font-bold text-sm">
                 {!loading ? (
                   `অর্ডারটি কনফর্ম করুন TK.
-                 ${subTotal + deliveryOption?.amount - promoDiscount}`
+                 ${(() => {
+                   const deliveryAmount = Number(deliveryOption?.amount) || 0;
+                   const promoDiscountAmount = Number(promoDiscount) || 0;
+                   const subTotalAmount = Number(subTotal) || 0;
+                   const total = isDeliveryPromo
+                     ? subTotalAmount
+                     : subTotalAmount + deliveryAmount - promoDiscountAmount;
+                   return isNaN(total) ? 0 : total;
+                 })()}`
                 ) : (
                   <div className="flex items-center justify-center">
                     <Triangle
