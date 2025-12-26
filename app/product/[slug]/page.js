@@ -11,33 +11,83 @@ import { getProductImage } from "@/app/utils/getProductImage";
 
 async function getProductDetails(slug) {
   try {
-    let res = await request(
+    console.log("[product page] fetching product", { slug });
+    const primary = await request(
       `product/admin-customer/view-with-similar/${slug}?similarLimit=12`
     );
-    
-    // Handle different response structures
-    if (res?.data?.success && res?.data?.data) {
-      return res.data;
+
+    const status = primary?.status ?? null;
+    const message = primary?.data?.message ?? null;
+
+    // Handle successful response
+    if (primary?.data?.success && primary?.data?.data) {
+      console.log("[product page] product fetch success", {
+        slug,
+        status,
+        hasSimilar: !!primary?.data?.data?.similarProducts?.length,
+      });
+      return { ...primary.data, status };
     }
-    
-    // Log for debugging
-    if (res) {
-      console.log("API Response:", JSON.stringify(res.data, null, 2));
+
+    console.warn("[product page] primary fetch failed, retrying simple view", {
+      slug,
+      status,
+      message,
+      hasData: !!primary?.data,
+      hasDataField: !!primary?.data?.data,
+    });
+
+    // Fallback: fetch without similar products to avoid aggregation edge cases
+    const fallback = await request(`product/admin-customer/view/${slug}`);
+    const fallbackStatus = fallback?.status ?? null;
+    const fallbackMessage = fallback?.data?.message ?? null;
+
+    if (fallback?.data?.success && fallback?.data?.data) {
+      console.log("[product page] fallback product fetch success", {
+        slug,
+        status: fallbackStatus,
+      });
+      // Normalize shape to match primary response
+      return {
+        success: true,
+        data: { ...fallback.data.data, similarProducts: [] },
+        status: fallbackStatus,
+      };
     }
-    
-    return null;
+
+    console.warn("[product page] fallback fetch failed", {
+      slug,
+      status: fallbackStatus,
+      message: fallbackMessage,
+    });
+
+    return {
+      success: false,
+      data: null,
+      status: fallbackStatus || status,
+      message: fallbackMessage || message || "Product fetch failed",
+    };
   } catch (error) {
-    console.log("err in getProducts", error);
-    return null;
+    console.error("Error in getProductDetails:", { slug, error });
+    return {
+      success: false,
+      data: null,
+      status: null,
+      message: error?.message || "Unknown fetch error",
+    };
   }
 }
 
-
 export default async function ProductDetails(params) {
-  const productInfo = await getProductDetails(params.params.slug);
+  const slug = params.params.slug;
+  const productInfo = await getProductDetails(slug);
 
-  if (!productInfo || !productInfo?.success || !productInfo?.data) {
-    console.log("Product not found - productInfo:", productInfo);
+  if (!productInfo?.success || !productInfo?.data) {
+    console.log("[product page] product not available", {
+      slug,
+      status: productInfo?.status,
+      message: productInfo?.message,
+    });
     notFound();
   }
 

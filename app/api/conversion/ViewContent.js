@@ -13,6 +13,15 @@ const ViewContent = ({ info, selectedVariation }) => {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    
+    // Guard: Only proceed if info exists and has required fields (allow sku fallback)
+    if (!info || !info._id) {
+      console.log("ViewContent: Skipping - info is missing or invalid", { info });
+      return;
+    }
+
+    const productSlug = info?.slug;
+    const safeSku = info?.sku || productSlug || info?._id;
 
     const fetchConversionApi = async () => {
       try {
@@ -38,7 +47,7 @@ const ViewContent = ({ info, selectedVariation }) => {
           eventType: "ViewContent",
           products: [
             {
-              sku: info?.sku,
+              sku: safeSku,
               productId: info?._id,
               categoryName: info?.categories?.[0]?.name || "",
               name: info?.name,
@@ -53,24 +62,32 @@ const ViewContent = ({ info, selectedVariation }) => {
         // Uncomment the line below to send data to the API
         const response = await sdkEventsApi(conversionApiData);
 
+        if (!response?.data?.products?.length) {
+          console.warn("ViewContent: Missing products in response", {
+            slug: productSlug,
+            response: response?.data,
+          });
+          return;
+        }
+
         const time = getFormattedEventDetails(response?.data?.currentTimestamp);
 
         const eventData = {
-          id: response?.data?.products?.[0]?.sku,
-          content_id: response?.data?.products?.[0]?.sku,
+          id: response?.data?.products?.[0]?.sku || safeSku,
+          content_id: response?.data?.products?.[0]?.sku || safeSku,
           content_ids:
             response?.data?.products?.map((product) => product.sku) || [],
-          content_name: response?.data?.products?.[0]?.name,
-          content_category: response?.data?.products?.[0]?.categoryName,
+          content_name: response?.data?.products?.[0]?.name || info?.name,
+          content_category: response?.data?.products?.[0]?.categoryName || info?.categories?.[0]?.name,
           content_type: "product",
-          contents: response?.data?.products?.[0],
+          contents: response?.data?.products?.[0] || conversionApiData.products[0],
           currency: "BDT",
           event_time: time?.formattedTime,
           event_day: time?.eventDay,
           event_month: time?.eventMonth,
           event_year: time?.eventYear,
           value: response?.data?.products?.[0]?.price,
-          description: response?.data?.products?.[0]?.description,
+          description: response?.data?.products?.[0]?.description || info?.description,
           availability:
             response?.data?.products?.[0]?.stackAvailable > 0
               ? "in stock"
@@ -98,7 +115,10 @@ const ViewContent = ({ info, selectedVariation }) => {
 
         // event("ViewContent", eventData);
       } catch (error) {
-        console.error("Error fetching conversion API:", error);
+        console.error("Error fetching conversion API:", {
+          slug: productSlug,
+          error,
+        });
       }
     };
 
@@ -108,7 +128,8 @@ const ViewContent = ({ info, selectedVariation }) => {
   return (
     <div>
       <PageView />
-      {settingsData?.allScript?.fbScript?.header && eventData?.eventID && (
+      {/* Only render ViewContent pixel event if we have valid product data */}
+      {settingsData?.allScript?.fbScript?.header && eventData?.eventID && info?._id && info?.sku && (
         <FacebookPixel
           eventType="ViewContent"
           eventData={eventData}
